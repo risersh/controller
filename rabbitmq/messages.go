@@ -15,6 +15,10 @@ const (
 	MessageTypeDeleteDeployment MessageType = "deployments.delete"
 	// MessageTypeRestartDeployment is a message type that is sent when a deployment is to be restarted.
 	MessageTypeRestartDeployment MessageType = "deployments.restart"
+	// MessageTypeNewCertificateIssuer is a message type that is sent when a new certificate issuer is to be created.
+	MessageTypeNewCertificateIssuer MessageType = "certificateissuers.new"
+	// MessageTypeDeleteCertificateIssuer is a message type that is sent when a certificate issuer is to be deleted.
+	MessageTypeDeleteCertificateIssuer MessageType = "certificateissuers.delete"
 )
 
 // Message is a generic message type that can be used to send and receive

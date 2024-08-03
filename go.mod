@@ -8,7 +8,7 @@ require (
 	github.com/mateothegreat/go-multilog v0.0.0-20240718081407-2f402bd1c2b7
 	github.com/mateothegreat/go-rabbitmq v0.0.0-20240803063638-1a54c0f38163
 	github.com/rabbitmq/amqp091-go v1.9.0
-	github.com/risersh/config v0.0.0-20240803070935-54bad0eca25b
+	github.com/risersh/config v0.0.0-20240803191625-cc8791101c9d
 	github.com/stretchr/testify v1.9.0
 	k8s.io/api v0.30.3
 	k8s.io/apimachinery v0.30.3
@@ -45,7 +45,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/risersh/util v0.0.0-20240803070601-cb2b624a6eaa // indirect
+	github.com/risersh/util v0.0.0-20240803191450-30b99f04deaa // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	go.opentelemetry.io/otel v1.28.0 // indirect
 	go.opentelemetry.io/otel/metric v1.28.0 // indirect

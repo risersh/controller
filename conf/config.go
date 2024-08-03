@@ -13,7 +13,10 @@ var PrivateKey paseto.V4AsymmetricSecretKey
 
 type Conf struct {
 	config.BaseConfig
-	Port int `yaml:"port" env:"PORT" env-default:"8080"`
+	Certificates struct {
+		Email  string `yaml:"email" env:"CERTIFICATES_EMAIL"`
+		Server string `yaml:"server" env:"CERTIFICATES_SERVER"`
+	} `yaml:"certificates"`
 }
 
 func Init() {
@@ -23,8 +26,4 @@ func Init() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	PrivateKey, err = paseto.NewV4AsymmetricSecretKeyFromHex(Config.Sessions.PrivateKey)
-	if err != nil {
-		log.Fatalf("Failed to load private key: %v", err)
-	}
 }

@@ -97,10 +97,10 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/rabbitmq/amqp091-go v1.9.0 h1:qrQtyzB4H8BQgEuJwhmVQqVHB9O4+MNDJCCAcpc3Aoo=
 github.com/rabbitmq/amqp091-go v1.9.0/go.mod h1:+jPrT9iY2eLjRaMSRHUhc3z14E/l85kv/f+6luSD3pc=
-github.com/risersh/config v0.0.0-20240803070935-54bad0eca25b h1:zKE6D3COGwl44Go+h3FX7gjNXr8MKeLOxy9GQ4rkLnc=
-github.com/risersh/config v0.0.0-20240803070935-54bad0eca25b/go.mod h1:aADE6cQoR/d+bztZ71d1eyil7b2mO6Js1COe360fA6I=
-github.com/risersh/util v0.0.0-20240803070601-cb2b624a6eaa h1:aiNOP1JLnQ1+NYuhYz9sPHqS79SyfEbFZXntZ4WyQVo=
-github.com/risersh/util v0.0.0-20240803070601-cb2b624a6eaa/go.mod h1:LK/xCf6ynIxmFelzioSXpIpYuILHfRjSyJqAK40QGTU=
+github.com/risersh/config v0.0.0-20240803191625-cc8791101c9d h1:I05r9ecatfFow437t+0jayRoTnN5BdoWKU+4PbO+3gY=
+github.com/risersh/config v0.0.0-20240803191625-cc8791101c9d/go.mod h1:W/EUTwJxUqqNxjBXgi6rSyyY50V8Auf4Lu0JcgHmrMk=
+github.com/risersh/util v0.0.0-20240803191450-30b99f04deaa h1:xIAigizJYWWvFgo4/bmFGGxYMdXOMnoKWieiXcDj4+c=
+github.com/risersh/util v0.0.0-20240803191450-30b99f04deaa/go.mod h1:LK/xCf6ynIxmFelzioSXpIpYuILHfRjSyJqAK40QGTU=
 github.com/rogpeppe/go-internal v1.10.0 h1:TMyTOH3F/DB16zRVcYyreMH6GnZZrwQVAoYjRBZyWFQ=
 github.com/rogpeppe/go-internal v1.10.0/go.mod h1:UQnix2H7Ngw/k4C5ijL5+65zddjncjaFoBhdsK/akog=
 github.com/spf13/pflag v1.0.5 h1:iy+VFUOCP1a+8yFto/drg2CJ5u0yRoB7fZw3DKv/JXA=

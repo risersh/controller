@@ -1,4 +1,4 @@
-package controller
+package main
 
 import (
 	"crypto/tls"
@@ -56,7 +56,7 @@ func init() {
 func main() {
 	go rabbitmq.Setup()
 
-	ch, err := rabbitmq.StartConsuming[rabbitmq.Message[rabbitmq.MessageTypeNewDeployment]]()
+	ch, err := rabbitmq.StartConsuming[rabbitmq.Message[rabbitmq.MessageType]]()
 	if err != nil {
 		log.Fatalf("Failed to start consuming: %v", err)
 	}
