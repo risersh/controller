@@ -124,3 +124,45 @@ func NewDeployment(args NewDeploymentArgs) (*appsv1.Deployment, error) {
 
 	return deployment, nil
 }
+
+type DeleteDeploymentArgs struct {
+	Namespace string
+	Name      string
+}
+
+func DeleteDeployment(args DeleteDeploymentArgs) error {
+	client, _ := kubernetes.NewNativeClient()
+
+	deploymentsClient := client.AppsV1().Deployments(args.Namespace)
+
+	deletePolicy := metav1.DeletePropagationForeground
+
+	if err := deploymentsClient.Delete(context.Background(), args.Name, metav1.DeleteOptions{
+		PropagationPolicy: &deletePolicy,
+	}); err != nil {
+		log.Printf("Error deleting deployment %q: %s\n", args.Name, err)
+		return err
+	}
+
+	err := wait.PollUntilContextTimeout(context.Background(), 1*time.Second, 5*time.Minute, true, func(context.Context) (bool, error) {
+
+		_, err := deploymentsClient.Get(context.Background(), args.Name, metav1.GetOptions{})
+
+		if err != nil {
+			return true, nil
+		}
+
+		log.Printf("Waiting for deployment %q to be deleted.\n", args.Name)
+
+		return false, nil
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	log.Printf("Deleted deployment %q.\n", args.Name)
+
+	return nil
+
+}

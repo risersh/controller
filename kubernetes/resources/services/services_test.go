@@ -25,3 +25,14 @@ func TestNewService(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestDeleteService(t *testing.T) {
+	err := DeleteService(DeleteServiceArgs{
+		Namespace: "test",
+		Name:      "test",
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+}

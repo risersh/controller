@@ -19,6 +19,10 @@ type NewServiceArgs struct {
 }
 
 func NewService(args NewServiceArgs) error {
+	DeleteService(DeleteServiceArgs{
+		Namespace: args.Namespace,
+		Name:      args.Name,
+	})
 
 	client, _ := kubernetes.NewNativeClient()
 	servicesClient := client.CoreV1().Services(args.Namespace)
@@ -47,4 +51,28 @@ func NewService(args NewServiceArgs) error {
 
 	return nil
 
+}
+
+type DeleteServiceArgs struct {
+	Namespace string
+	Name      string
+}
+
+func DeleteService(args DeleteServiceArgs) error {
+	client, _ := kubernetes.NewNativeClient()
+
+	servicesClient := client.CoreV1().Services(args.Namespace)
+
+	deletePolicy := metav1.DeletePropagationForeground
+
+	if err := servicesClient.Delete(context.Background(), args.Name, metav1.DeleteOptions{
+		PropagationPolicy: &deletePolicy,
+	}); err != nil {
+		return err
+
+	}
+
+	log.Printf("Deleted service %q in namespace %q \n", args.Name, args.Namespace)
+
+	return nil
 }
