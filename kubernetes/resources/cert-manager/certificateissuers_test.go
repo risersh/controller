@@ -21,11 +21,11 @@ func TestIssuerSuiteRun(t *testing.T) {
 	suite.Run(t, new(TestSuite))
 }
 
-// func (s *TestSuite) TearDownSuite() {
-// 	if s.secret != nil {
-// 		secrets.DeleteSecret(s.secret.Name, s.secret.Namespace)
-// 	}
-// }
+func (s *TestSuite) TearDownSuite() {
+	if s.issuer != nil {
+		DeleteIssuer(s.issuer.GetName(), s.issuer.GetNamespace())
+	}
+}
 
 func (s *TestSuite) Test1NewIssuerWithHTTPSolver() {
 	res, err := NewIssuer(NewIssuerArgs{
@@ -39,22 +39,13 @@ func (s *TestSuite) Test1NewIssuerWithHTTPSolver() {
 	s.NoError(err)
 	s.issuer = res
 }
+func (s *TestSuite) Test2GetIssuerByName() {
+	issuer, err := GetIssuerByName(s.issuer.GetName(), s.issuer.GetNamespace())
+	s.NoError(err)
+	s.Equal(issuer.GetName(), s.issuer.GetName())
+}
 
-// func (s *TestSuite) Test2GetSecretByName() {
-// 	secret, err := secrets.GetSecret(s.secret.Name, s.secret.Namespace)
-// 	s.NoError(err)
-// 	s.Equal(string(secret.Data["foo"]), "bar")
-// }
-
-// func (s *TestSuite) Test3GetSecretByLabel() {
-// 	secret, err := secrets.GetSecretsByLabels(s.secret.Namespace, map[string]string{
-// 		"foo": "bar",
-// 	})
-// 	s.NoError(err)
-// 	s.Equal(len(secret), 1)
-// }
-
-// func (s *TestSuite) Test4DeleteSecret() {
-// 	err := secrets.DeleteSecret(s.secret.Name, s.secret.Namespace)
-// 	s.NoError(err)
-// }
+func (s *TestSuite) Test3DeleteIssuer() {
+	err := DeleteIssuer(s.issuer.GetName(), s.issuer.GetNamespace())
+	s.NoError(err)
+}

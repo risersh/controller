@@ -89,3 +89,21 @@ func NewIssuer(args NewIssuerArgs) (*unstructured.Unstructured, error) {
 
 	return res, nil
 }
+
+func GetIssuerByName(name, namespace string) (*unstructured.Unstructured, error) {
+	client, err := kubernetes.NewDynamicClient()
+	if err != nil {
+		return nil, err
+	}
+
+	return client.Resource(IssuerResource).Namespace(namespace).Get(context.Background(), name, metav1.GetOptions{})
+}
+
+func DeleteIssuer(name, namespace string) error {
+	client, err := kubernetes.NewDynamicClient()
+	if err != nil {
+		return err
+	}
+
+	return client.Resource(IssuerResource).Namespace(namespace).Delete(context.Background(), name, metav1.DeleteOptions{})
+}
