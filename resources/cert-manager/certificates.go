@@ -17,7 +17,7 @@ var CertificatesResource = schema.GroupVersionResource{
 }
 
 func ListCertificates() (*unstructured.UnstructuredList, error) {
-	client, err := kubernetes.NewClient()
+	client, err := kubernetes.NewDynamicClient()
 	if err != nil {
 		return nil, err
 	}
