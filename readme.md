@@ -2,16 +2,40 @@
 
 The orchestration controller is responsible for orchestrating lifecycles of riser services such as deployments, services, ingresses, etc.
 
-## Dependencies
+The controller is a fairly lightweight service that primarily listens for events from the REST API by means of a RabbitMQ queue and then creates the necessary Kubernetes resources to run the service.
 
-The controller is fairly lightweight and does have a few dependencies:
+## Architecture
+
+![alt text](<CleanShot 2024-08-03 at 14.41.05.png>)
+
+**Terminology:**
+
+- **Tenant**: A tenant is a top level entity that owns one or more riser deployments.
+- **Riser Deployment**: A riser deployment is an entity that contains the dependencies needed to run a docker image build by the [builder](https://github.com/risersh/builder) service.
+
+### Initial Tenant Setup
+
+When a new tenant is created the following resources are requested to be created by the REST API:
+
+- Kubernetes Issuer (cert-manager): Used to issue certificates for deployments for a specific namespace.
+
+### New Riser Deployments
+
+When a new riser deployment is created the following resources are requested to be created by the REST API:
+
+- Kubernetes Deployment: Used to run the docker image built by the [builder](https://github.com/risersh/builder) service.
+- Kubernetes Service: Used to expose the deployment to traffic.
+- Kubernetes HTTPRoute (istio): Used to route traffic to the deployment.
+- Kubernetes Certificate (cert-manager): Used to issue certificates for the new deployment URL(s).
+
+## Development
+
+The controller has the following dependencies:
 
 - Connection to the RabbitMQ server for sending and receiving instructions from the REST API and other services.
 - Connection to a Kubernetes cluster with cert-manager and istio installed.
 
 > To start infrastructure services like RabbitMQ see the [infrastructure repository](https://github.com/risersh/infrastructure) readme.
-
-## Development
 
 ### Setup
 
