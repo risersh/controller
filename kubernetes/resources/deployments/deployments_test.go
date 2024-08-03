@@ -41,3 +41,14 @@ func TestNewDeployment(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestDeleteDeployment(t *testing.T) {
+	err := DeleteDeployment(DeleteDeploymentArgs{
+		Name:      "test",
+		Namespace: "test",
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+}
