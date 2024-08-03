@@ -6,7 +6,7 @@ The controller is a fairly lightweight service that primarily listens for events
 
 ## Architecture
 
-![alt text](<CleanShot 2024-08-03 at 14.41.05.png>)
+![diagram](docs/diagram.png)
 
 **Terminology:**
 
