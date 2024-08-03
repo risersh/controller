@@ -2,9 +2,10 @@ package services
 
 import (
 	"context"
-	"log"
 
+	"github.com/mateothegreat/go-multilog/multilog"
 	"github.com/risersh/controller/kubernetes"
+	"github.com/risersh/util/variables"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -19,15 +20,7 @@ type NewServiceArgs struct {
 }
 
 func NewService(args NewServiceArgs) error {
-	DeleteService(DeleteServiceArgs{
-		Namespace: args.Namespace,
-		Name:      args.Name,
-	})
-
-	client, _ := kubernetes.NewNativeClient()
-	servicesClient := client.CoreV1().Services(args.Namespace)
-
-	service := &apiv1.Service{
+	res, err := kubernetes.NewNativeClient().CoreV1().Services(args.Namespace).Create(context.Background(), &apiv1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      args.Name,
 			Namespace: args.Namespace,
@@ -40,17 +33,20 @@ func NewService(args NewServiceArgs) error {
 			},
 			Ports: args.Ports,
 		},
-	}
-	_, err := servicesClient.Create(context.Background(), service, metav1.CreateOptions{})
-
+	}, metav1.CreateOptions{})
 	if err != nil {
+		multilog.Error("kubernetes.services.create", "error creating service", map[string]interface{}{
+			"error": err,
+		})
 		return err
 	}
 
-	log.Printf("Created service %q in namespace %q \n", service.GetObjectMeta().GetName(), service.GetObjectMeta().GetNamespace())
+	multilog.Info("kubernetes.services.create", "created service", map[string]interface{}{
+		"namespace": res.GetObjectMeta().GetNamespace(),
+		"name":      res.GetObjectMeta().GetName(),
+	})
 
 	return nil
-
 }
 
 type DeleteServiceArgs struct {
@@ -59,20 +55,19 @@ type DeleteServiceArgs struct {
 }
 
 func DeleteService(args DeleteServiceArgs) error {
-	client, _ := kubernetes.NewNativeClient()
-
-	servicesClient := client.CoreV1().Services(args.Namespace)
-
-	deletePolicy := metav1.DeletePropagationForeground
-
-	if err := servicesClient.Delete(context.Background(), args.Name, metav1.DeleteOptions{
-		PropagationPolicy: &deletePolicy,
+	if err := kubernetes.NewNativeClient().CoreV1().Services(args.Namespace).Delete(context.Background(), args.Name, metav1.DeleteOptions{
+		PropagationPolicy: variables.ToPtr(metav1.DeletePropagationForeground),
 	}); err != nil {
+		multilog.Error("kubernetes.services.delete", "error deleting service", map[string]interface{}{
+			"error": err,
+		})
 		return err
-
 	}
 
-	log.Printf("Deleted service %q in namespace %q \n", args.Name, args.Namespace)
+	multilog.Info("kubernetes.services.delete", "delete service", map[string]interface{}{
+		"namespace": args.Namespace,
+		"name":      args.Name,
+	})
 
 	return nil
 }

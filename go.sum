@@ -101,6 +101,8 @@ github.com/risersh/config v0.0.0-20240803191625-cc8791101c9d h1:I05r9ecatfFow437
 github.com/risersh/config v0.0.0-20240803191625-cc8791101c9d/go.mod h1:W/EUTwJxUqqNxjBXgi6rSyyY50V8Auf4Lu0JcgHmrMk=
 github.com/risersh/util v0.0.0-20240803191450-30b99f04deaa h1:xIAigizJYWWvFgo4/bmFGGxYMdXOMnoKWieiXcDj4+c=
 github.com/risersh/util v0.0.0-20240803191450-30b99f04deaa/go.mod h1:LK/xCf6ynIxmFelzioSXpIpYuILHfRjSyJqAK40QGTU=
+github.com/risersh/util v0.0.0-20240803211153-9594957bfa88 h1:F44dBQG2RYmNCjjCuAa6tCMGfrjwX6ypYowmToFzBdg=
+github.com/risersh/util v0.0.0-20240803211153-9594957bfa88/go.mod h1:LK/xCf6ynIxmFelzioSXpIpYuILHfRjSyJqAK40QGTU=
 github.com/rogpeppe/go-internal v1.10.0 h1:TMyTOH3F/DB16zRVcYyreMH6GnZZrwQVAoYjRBZyWFQ=
 github.com/rogpeppe/go-internal v1.10.0/go.mod h1:UQnix2H7Ngw/k4C5ijL5+65zddjncjaFoBhdsK/akog=
 github.com/spf13/pflag v1.0.5 h1:iy+VFUOCP1a+8yFto/drg2CJ5u0yRoB7fZw3DKv/JXA=

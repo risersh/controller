@@ -17,36 +17,19 @@ type NewNamespaceArgs struct {
 }
 
 func NewNamespace(args NewNamespaceArgs) (*apiv1.Namespace, error) {
-	client, err := kubernetes.NewNativeClient()
-	if err != nil {
-		return nil, err
-	}
-
-	namespace := &apiv1.Namespace{
+	return kubernetes.NewNativeClient().CoreV1().Namespaces().Create(context.Background(), &apiv1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        args.Name,
 			Labels:      args.Labels,
 			Annotations: args.Annotations,
 		},
-	}
-
-	return client.CoreV1().Namespaces().Create(context.Background(), namespace, metav1.CreateOptions{})
+	}, metav1.CreateOptions{})
 }
 
 func GetNamespaceByName(name string) (*apiv1.Namespace, error) {
-	client, err := kubernetes.NewNativeClient()
-	if err != nil {
-		return nil, err
-	}
-
-	return client.CoreV1().Namespaces().Get(context.Background(), name, metav1.GetOptions{})
+	return kubernetes.NewNativeClient().CoreV1().Namespaces().Get(context.Background(), name, metav1.GetOptions{})
 }
 
 func DeleteNamespace(name string) error {
-	client, err := kubernetes.NewNativeClient()
-	if err != nil {
-		return err
-	}
-
-	return client.CoreV1().Namespaces().Delete(context.Background(), name, metav1.DeleteOptions{})
+	return kubernetes.NewNativeClient().CoreV1().Namespaces().Delete(context.Background(), name, metav1.DeleteOptions{})
 }

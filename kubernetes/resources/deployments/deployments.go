@@ -2,16 +2,16 @@ package deployments
 
 import (
 	"context"
-	"log"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/mateothegreat/go-multilog/multilog"
 	"github.com/risersh/controller/kubernetes"
+	"github.com/risersh/util/variables"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 type NewDeploymentArgs struct {
@@ -24,6 +24,7 @@ type NewDeploymentArgs struct {
 	Ports        []apiv1.ContainerPort `json:"ports"`
 	EnvVars      []apiv1.EnvVar        `json:"envVars"`
 	Resources    ResourcesArgs         `json:"resources"`
+	Timeout      time.Duration         `json:"timeout"`
 }
 
 type ResourcesArgs struct {
@@ -36,11 +37,17 @@ type ResourceArgs struct {
 	Memory string `json:"memory"`
 }
 
-func NewDeployment(args NewDeploymentArgs) (*appsv1.Deployment, error) {
-	client, _ := kubernetes.NewNativeClient()
-	deploymentsClient := client.AppsV1().Deployments(args.Namespace)
-	replicas := args.Replicas
+type DeleteDeploymentArgs struct {
+	Namespace string
+	Name      string
+}
 
+func NewDeployment(args NewDeploymentArgs) (*appsv1.Deployment, []error) {
+	multilog.Info("kubernetes.deployments.new", "Creating kubernetes deployment", map[string]interface{}{
+		"args": args,
+	})
+
+	// Create a new deployment.
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      args.Name,
@@ -48,7 +55,7 @@ func NewDeployment(args NewDeploymentArgs) (*appsv1.Deployment, error) {
 			Labels:    args.Labels,
 		},
 		Spec: appsv1.DeploymentSpec{
-			Replicas: &replicas,
+			Replicas: &args.Replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: args.Labels,
 			},
@@ -61,9 +68,6 @@ func NewDeployment(args NewDeploymentArgs) (*appsv1.Deployment, error) {
 						{
 							Name: "ghcr",
 						},
-					},
-					NodeSelector: map[string]string{
-						"role": args.NodeSelector,
 					},
 					TerminationGracePeriodSeconds: &[]int64{10}[0],
 					Containers: []apiv1.Container{
@@ -89,79 +93,73 @@ func NewDeployment(args NewDeploymentArgs) (*appsv1.Deployment, error) {
 		},
 	}
 
-	result, err := deploymentsClient.Create(context.TODO(), deployment, metav1.CreateOptions{})
-	if err != nil {
-		return nil, err
+	// If a node selector is provided, set it on the deployment.
+	if args.NodeSelector != "" {
+		deployment.Spec.Template.Spec.NodeSelector = map[string]string{
+			"role": args.NodeSelector,
+		}
 	}
-	log.Printf("Created deployment %q.\n", result.GetObjectMeta().GetName())
 
-	var readyTime time.Duration
-	lastTime := time.Now()
+	client := kubernetes.NewNativeClient()
 
-	// wait for deployment to be ready:
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-	defer cancel()
-	err = wait.PollUntilContextTimeout(ctx, 1*time.Second, 5*time.Minute, true, func(ctx context.Context) (bool, error) {
-		d, err := deploymentsClient.Get(ctx, args.Name, metav1.GetOptions{})
-		if err != nil {
-			return false, err
-		}
+	// Create the deployment in the cluster.
+	result, err := client.AppsV1().Deployments(args.Namespace).Create(context.TODO(), deployment, metav1.CreateOptions{})
+	if err != nil {
+		multilog.Error("kubernetes.deployments.new", "error creating kubernetes deployment", map[string]interface{}{
+			"error": err,
+		})
+		return nil, []error{err}
+	}
 
-		if d.Status.ReadyReplicas == 1 {
-			readyTime = time.Since(lastTime)
-			return true, nil
-		}
-
-		log.Printf("Waiting for deployment %q to be ready.\n", args.Name)
-
-		return false, nil
+	multilog.Info("kubernetes.deployments.new", "created kubernetes deployment", map[string]interface{}{
+		"name": result.GetObjectMeta().GetName(),
 	})
-	if err != nil {
-		panic(err)
+
+	// Create a context with a timeout for the api call to get the deployment.
+	// This is to prevent the api call from blocking indefinitely.
+	ctx, cancel := context.WithTimeout(context.Background(), args.Timeout)
+	defer cancel()
+
+	// Wait for the deployment to be ready by polling the deployment status.
+	// This is a blocking call that will return an error if the deployment
+	// is not ready within the timeout.
+	errs := kubernetes.WaitForResourceConditions(kubernetes.WaitForResourceConditionArgs{
+		Timeout: args.Timeout,
+		Evaluator: func() (bool, error) {
+			deployment, err := client.AppsV1().Deployments(args.Namespace).Get(ctx, args.Name, metav1.GetOptions{})
+			if err != nil {
+				multilog.Error("kubernetes.deployments.new", "error getting kubernetes deployment", map[string]interface{}{
+					"error": err,
+				})
+				return false, err
+			}
+			return deployment.Status.ReadyReplicas == args.Replicas, nil
+		},
+	})
+	if len(errs) > 0 {
+		return nil, errs
 	}
 
-	log.Printf("Deployment %q ready after %s.\n", args.Name, readyTime)
+	multilog.Info("kubernetes.deployments.new", "kubernetes deployment ready", map[string]interface{}{
+		"name": result.GetObjectMeta().GetName(),
+	})
 
 	return deployment, nil
 }
 
-type DeleteDeploymentArgs struct {
-	Namespace string
-	Name      string
-}
-
 func DeleteDeployment(args DeleteDeploymentArgs) error {
-	client, _ := kubernetes.NewNativeClient()
-
-	deploymentsClient := client.AppsV1().Deployments(args.Namespace)
-
-	deletePolicy := metav1.DeletePropagationForeground
-
-	if err := deploymentsClient.Delete(context.Background(), args.Name, metav1.DeleteOptions{
-		PropagationPolicy: &deletePolicy,
+	if err := kubernetes.NewNativeClient().AppsV1().Deployments(args.Namespace).Delete(context.Background(), args.Name, metav1.DeleteOptions{
+		PropagationPolicy: variables.ToPtr(metav1.DeletePropagationBackground),
 	}); err != nil {
-		log.Printf("Error deleting deployment %q: %s\n", args.Name, err)
+		multilog.Error("kubernetes.deployments.delete", "error deleting kubernetes deployment", map[string]interface{}{
+			"error": err,
+		})
 		return err
 	}
 
-	err := wait.PollUntilContextTimeout(context.Background(), 1*time.Second, 5*time.Minute, true, func(context.Context) (bool, error) {
-
-		_, err := deploymentsClient.Get(context.Background(), args.Name, metav1.GetOptions{})
-
-		if err != nil {
-			return true, nil
-		}
-
-		log.Printf("Waiting for deployment %q to be deleted.\n", args.Name)
-
-		return false, nil
+	multilog.Info("kubernetes.deployments.delete", "deleted kubernetes deployment", map[string]interface{}{
+		"name": args.Name,
 	})
-
-	if err != nil {
-		panic(err)
-	}
-
-	log.Printf("Deleted deployment %q.\n", args.Name)
 
 	return nil
 

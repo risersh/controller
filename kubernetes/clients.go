@@ -1,8 +1,11 @@
 package kubernetes
 
 import (
+	"fmt"
 	"os"
 
+	"github.com/mateothegreat/go-multilog/multilog"
+	"github.com/risersh/controller/conf"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -38,29 +41,44 @@ func NewDynamicClient() (dynamic.Interface, error) {
 // Returns:
 //   - *kubernetes.Clientset: A Kubernetes clientset for accessing the Kubernetes API.
 //   - error: An error if the client could not be created.
-func NewNativeClient() (*kubernetes.Clientset, error) {
-	// Temporary until we get auth tokens working.
-	home, err := os.UserHomeDir()
-	if err != nil {
-		panic(err)
-	}
+func NewNativeClient() *kubernetes.Clientset {
+	var config *rest.Config
+	var err error
 
-	// If the environment is not kubernetes, use the kubeconfig file.
-	config, err := rest.InClusterConfig()
-	if os.Getenv("ENVIRONMENT") != "kubernetes" {
+	// If the environment is containerized, use the in-cluster configuration
+	// otherwise, use the kubeconfig file from the user's home directory.
+	if conf.Config.Environment.Containerized {
+		config, err = rest.InClusterConfig()
 		if err != nil {
-			config, err = clientcmd.BuildConfigFromFlags("", home+"/.kube/config")
-			if err != nil {
-				panic(err.Error())
-			}
+			multilog.Fatal("kubernetes.clients", "get in-cluster configuration", map[string]interface{}{
+				"error": err,
+			})
+		}
+	} else {
+		// Temporary until we get auth tokens working.
+		home, err := os.UserHomeDir()
+		if err != nil {
+			multilog.Fatal("kubernetes.clients", "get user home directory", map[string]interface{}{
+				"error": err,
+			})
+		}
+
+		config, err = clientcmd.BuildConfigFromFlags("", fmt.Sprintf("%s/.kube/config", home))
+		if err != nil {
+			multilog.Fatal("kubernetes.clients", "new native client", map[string]interface{}{
+				"error": err,
+			})
 		}
 	}
 
-	// Create a Kubernetes clientset for accessing the Kubernetes API.
+	// Create a Kubernetes clientset for accessing the Kubernetes API using the
+	// configuration we just created above.
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return nil, err
+		multilog.Fatal("kubernetes.clients", "new clientset", map[string]interface{}{
+			"error": err,
+		})
 	}
 
-	return clientset, nil
+	return clientset
 }

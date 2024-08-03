@@ -18,11 +18,6 @@ type NewSecretArgs struct {
 }
 
 func NewSecret(args NewSecretArgs) (*corev1.Secret, error) {
-	client, err := kubernetes.NewNativeClient()
-	if err != nil {
-		return nil, err
-	}
-
 	secret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      args.Name,
@@ -33,7 +28,7 @@ func NewSecret(args NewSecretArgs) (*corev1.Secret, error) {
 		Type: corev1.SecretTypeOpaque,
 	}
 
-	res, err := client.CoreV1().Secrets(args.Namespace).Create(context.Background(), secret, metav1.CreateOptions{})
+	res, err := kubernetes.NewNativeClient().CoreV1().Secrets(args.Namespace).Create(context.Background(), secret, metav1.CreateOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -42,25 +37,14 @@ func NewSecret(args NewSecretArgs) (*corev1.Secret, error) {
 }
 
 func GetSecret(name, namespace string) (*corev1.Secret, error) {
-	client, err := kubernetes.NewNativeClient()
-	if err != nil {
-		return nil, err
-	}
-
-	return client.CoreV1().Secrets(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	return kubernetes.NewNativeClient().CoreV1().Secrets(namespace).Get(context.Background(), name, metav1.GetOptions{})
 }
 
 func GetSecretsByLabels(namespace string, matchLabels map[string]string) ([]corev1.Secret, error) {
-	client, err := kubernetes.NewNativeClient()
-	if err != nil {
-		return nil, err
-	}
-
-	labelSelector := labels.SelectorFromSet(matchLabels).String()
-	res, err := client.CoreV1().Secrets(namespace).List(
+	res, err := kubernetes.NewNativeClient().CoreV1().Secrets(namespace).List(
 		context.Background(),
 		metav1.ListOptions{
-			LabelSelector: labelSelector,
+			LabelSelector: labels.SelectorFromSet(matchLabels).String(),
 		},
 	)
 	if err != nil {
@@ -71,10 +55,5 @@ func GetSecretsByLabels(namespace string, matchLabels map[string]string) ([]core
 }
 
 func DeleteSecret(name, namespace string) error {
-	client, err := kubernetes.NewNativeClient()
-	if err != nil {
-		return err
-	}
-
-	return client.CoreV1().Secrets(namespace).Delete(context.Background(), name, metav1.DeleteOptions{})
+	return kubernetes.NewNativeClient().CoreV1().Secrets(namespace).Delete(context.Background(), name, metav1.DeleteOptions{})
 }
