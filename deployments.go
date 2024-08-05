@@ -1,6 +1,9 @@
 package main
 
-import "github.com/risersh/controller/kubernetes/resources/deployments"
+import (
+	"github.com/risersh/controller/kubernetes/resources/deployments"
+	appsv1 "k8s.io/api/apps/v1"
+)
 
 type NewDeploymentArgs struct {
 	ID       string
@@ -16,19 +19,19 @@ type NewDeploymentArgs struct {
 //
 // Returns:
 //   - error: An error if the deployment could not be created.
-func NewDeployment(args NewDeploymentArgs) []error {
-	_, err := deployments.NewDeployment(deployments.NewDeploymentArgs{
+func NewDeployment(args NewDeploymentArgs) (*appsv1.Deployment, []error) {
+	deployment, err := deployments.NewDeployment(deployments.NewDeploymentArgs{
 		Name:      args.ID,
 		Namespace: args.Tenant,
 		Replicas:  1,
 		Image:     args.Image,
 	})
 	if len(err) > 0 {
-		return err
+		return nil, err
 	}
 
 	// TODO: Create kubernetes service.
 	// TODO: Create kubernetes istio HTTPRoute CRD object.
 
-	return []error{}
+	return deployment, []error{}
 }
